@@ -1,0 +1,204 @@
+/* ==========================================================
+   Sistem Laporan Keuangan Klinik Pratama Asih - Custom Stylesheet
+   Modern, Clean, Medical-Grade UI & Print Optimization
+   ========================================================== */
+
+:root {
+  --primary-emerald: #059669;
+  --primary-dark: #065f46;
+  --primary-light: #ecfdf5;
+  --accent-teal: #0d9488;
+  --accent-blue: #0284c7;
+  --medical-slate: #0f172a;
+  --bg-slate: #f8fafc;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-slate);
+  color: #1e293b;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Currency Text Class */
+.font-rupiah {
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Glass & Card Effects */
+.card-hover {
+  transition: all 0.2s ease-in-out;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+}
+
+/* Custom Modal Backdrop Blur */
+.modal-backdrop {
+  backdrop-filter: blur(4px);
+  background-color: rgba(15, 23, 42, 0.6);
+}
+
+/* Badge styling */
+.badge-pemasukan {
+  background-color: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+.badge-pengeluaran {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+.badge-setoran {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+/* Loading Spinner */
+.spinner {
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #ffffff;
+  width: 20px;
+  height: 20px;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive Table Wrapper */
+.table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ==========================================================
+   PRINT STYLESHEET (Formal Clinic Financial Statement)
+   ========================================================== */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt;
+  }
+
+  /* Hide navigation, sidebar, action buttons */
+  aside,
+  header,
+  .no-print,
+  #sidebar,
+  .btn-print-hide,
+  #toast-container,
+  .modal-backdrop,
+  .action-col {
+    display: none !important;
+  }
+
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Formal Kop Surat Klinik */
+  .kop-surat {
+    display: block !important;
+    border-bottom: 3px double #000000;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .kop-surat h1 {
+    font-size: 18pt !important;
+    font-weight: 800 !important;
+    text-transform: uppercase;
+    margin: 0;
+    color: #000 !important;
+  }
+
+  .kop-surat h2 {
+    font-size: 13pt !important;
+    font-weight: 600 !important;
+    margin: 2px 0;
+  }
+
+  .kop-surat p {
+    font-size: 9pt !important;
+    margin: 2px 0;
+    color: #333 !important;
+  }
+
+  /* Signature Block at Bottom of Printout */
+  .signature-container {
+    display: flex !important;
+    justify-content: space-between;
+    margin-top: 40px;
+    page-break-inside: avoid;
+  }
+
+  .signature-box {
+    width: 45%;
+    text-align: center;
+  }
+
+  .signature-line {
+    margin-top: 60px;
+    border-bottom: 1px solid #000;
+    display: inline-block;
+    width: 80%;
+    font-weight: bold;
+  }
+
+  /* Print Table */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-bottom: 15px !important;
+  }
+
+  table th, table td {
+    border: 1px solid #000 !important;
+    padding: 6px 8px !important;
+    font-size: 9pt !important;
+    color: #000 !important;
+  }
+
+  table th {
+    background-color: #f1f5f9 !important;
+    font-weight: bold !important;
+    text-align: left;
+  }
+
+  .card, .bg-white {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+
+  .page-break {
+    page-break-after: always;
+  }
+}

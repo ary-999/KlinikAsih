@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Klinik Pratama Asih - Sistem Laporan Keuangan</title>
+  
+  <!-- Favicon / Logo -->
+  <link rel="icon" type="image/svg+xml" href="img/logo-klinik-asih.svg">
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            medical: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- SheetJS (XLSX Export) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- APP SHELL CONTAINER -->
+  <div class="flex h-screen overflow-hidden">
+
+    <!-- 1. SIDEBAR NAVIGATION -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-slate-900 text-white transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col justify-between shadow-2xl">
+      <!-- Sidebar Header -->
+      <div>
+        <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
+          <div class="flex items-center space-x-3">
+            <div class="w-11 h-11 rounded-xl bg-white p-1 flex items-center justify-center shadow-lg border border-emerald-500/30 overflow-hidden flex-shrink-0">
+              <img src="img/logo-klinik-asih.svg" class="w-full h-full object-contain" alt="Logo Klinik Pratama Asih">
+            </div>
+            <div class="min-w-0">
+              <h1 class="font-bold text-sm tracking-tight text-white leading-tight clinic-name-label truncate">Klinik Pratama Asih</h1>
+              <p class="text-[10.5px] text-emerald-400 font-medium italic truncate">Kesehatan & Kebahagiaan</p>
+            </div>
+          </div>
+          <button id="btn-close-sidebar" class="lg:hidden text-slate-400 hover:text-white p-1">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Sidebar Navigation Menu -->
+        <nav class="p-4 space-y-1.5 overflow-y-auto max-h-[calc(100vh-160px)]">
+          <a href="#" data-view="dashboard" class="nav-link flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition duration-150">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="#" data-view="pemasukan" class="nav-link flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition duration-150">
+            <i data-lucide="arrow-down-left" class="w-4 h-4 text-emerald-400"></i>
+            <span>Pemasukan</span>
+          </a>
+          <a href="#" data-view="pengeluaran" class="nav-link flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition duration-150">
+            <i data-lucide="arrow-up-right" class="w-4 h-4 text-rose-400"></i>
+            <span>Pengeluaran</span>
+          </a>
+          <a href="#" data-view="setoran" class="nav-link flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition duration-150">
+            <i data-lucide="wallet" class="w-4 h-4 text-blue-400"></i>
+            <span>Setoran</span>
+          </a>
+          <a href="#" data-view="saldo" class="nav-link flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition duration-150">
+            <i data-lucide="landmark" class="w-4 h-4 text-amber-400"></i>
+            <span>Saldo Kas</span>
+          </a>
+          
+          <div class="pt-4 pb-1">
+            <p class="px-3.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Laporan & Audit</p>
+          </div>
+
+          <a href="#" data-view="laporan-harian" class="nav-link flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition duration-150">
+            <i data-lucide="calendar" class="w-4 h-4 text-teal-300"></i>
+            <span>Laporan Harian</span>
+          </a>
+          <a href="#" data-view="laporan-bulanan" class="nav-link flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition duration-150">
+            <i data-lucide="calendar-range" class="w-4 h-4 text-sky-400"></i>
+            <span>Laporan Bulanan</span>
+          </a>
+          <a href="#" data-view="transaksi" class="nav-link flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition duration-150">
+            <i data-lucide="receipt" class="w-4 h-4 text-indigo-400"></i>
+            <span>Riwayat Transaksi</span>
+          </a>
+
+          <div class="pt-4 pb-1">
+            <p class="px-3.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Sistem</p>
+          </div>
+
+          <a href="#" data-view="pengaturan" class="nav-link flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition duration-150">
+            <i data-lucide="settings" class="w-4 h-4 text-slate-400"></i>
+            <span>Pengaturan</span>
+          </a>
+        </nav>
+      </div>
+
+      <!-- Sidebar Footer (Active User Profile) -->
+      <div class="p-4 border-t border-slate-800 bg-slate-950/60">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-white text-xs border border-emerald-400">
+            AY
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-semibold text-white truncate clinic-pimpinan-label">dr. Ade Yurga Tonara</p>
+            <p class="text-[11px] text-slate-400 truncate">Pimpinan & Penanggung Jawab</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 2. MAIN APP CONTENT AREA -->
+    <div class="flex-1 flex flex-col min-w-0 lg:ml-64 overflow-y-auto">
+
+      <!-- TOP HEADER -->
+      <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200 px-4 lg:px-8 py-3 flex items-center justify-between shadow-sm">
+        <div class="flex items-center space-x-3">
+          <button id="btn-mobile-menu" class="lg:hidden p-2 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+          
+          <div class="flex items-center space-x-3">
+            <div class="hidden sm:flex w-9 h-9 rounded-lg bg-emerald-50 border border-emerald-200 p-0.5 items-center justify-center overflow-hidden">
+              <img src="img/logo-klinik-asih.svg" class="w-full h-full object-contain" alt="Logo">
+            </div>
+            <div>
+              <div class="flex items-center space-x-2">
+                <h2 class="text-base font-bold text-slate-900 leading-tight clinic-name-label">Klinik Pratama Asih</h2>
+                <span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold">Laporan Keuangan</span>
+              </div>
+              <div class="flex items-center space-x-2 text-xs text-slate-500">
+                <span class="inline-flex items-center text-emerald-600 font-medium">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+                  Online
+                </span>
+                <span>&bull;</span>
+                <span class="font-medium text-slate-700">Senin, 21 September 2026</span>
+                <span>&bull;</span>
+                <span class="text-slate-600 font-semibold clinic-pimpinan-label">dr. Ade Yurga Tonara</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Info / Total Saldo Badge -->
+        <div class="flex items-center space-x-4">
+          <div class="hidden sm:flex flex-col text-right">
+            <span class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Total Saldo Kas</span>
+            <span id="header-total-saldo" class="text-base font-extrabold text-slate-800 font-rupiah">Rp3.574.005</span>
+          </div>
+          <button onclick="app.showView('transaksi')" class="hidden md:flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg transition">
+            <i data-lucide="search" class="w-3.5 h-3.5"></i>
+            <span>Cari Transaksi</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- MAIN VIEWS CONTAINER -->
+      <main class="flex-1 p-4 lg:p-8 bg-slate-50/50">
+
+        <!-- ========================================================
+             VIEW 1: DASHBOARD
+             ======================================================== -->
+        <section id="view-dashboard" class="view-section space-y-6">
+          
+          <!-- Running Highlights Banner (Laporan Berjalan) -->
+          <div class="bg-gradient-to-r from-emerald-800 to-teal-900 rounded-2xl p-5 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-center space-x-4">
+              <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-emerald-300">
+                <i data-lucide="activity" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-semibold text-emerald-200">Indikator Keuangan Berjalan (Dynamic DB)</h3>
+                <p class="text-xs text-emerald-100/80">Akumulasi real-time seluruh transaksi yang tercatat di database klinik</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-4 flex-wrap">
+              <div class="bg-white/10 backdrop-blur rounded-xl px-4 py-2.5 border border-white/10">
+                <span class="block text-[11px] text-emerald-200 font-medium">Total Lab</span>
+                <span id="card-total-lab-berjalan" class="text-lg font-bold font-rupiah text-white">Rp0</span>
+              </div>
+              <div class="bg-white/10 backdrop-blur rounded-xl px-4 py-2.5 border border-white/10">
+                <span class="block text-[11px] text-emerald-200 font-medium">Total Pengeluaran Berjalan</span>
+                <span id="card-total-pengeluaran-berjalan" class="text-lg font-bold font-rupiah text-amber-300">Rp15.460.200</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 7 KARTU STATISTIK DASHBOARD -->
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Statistik Keuangan Utama</h3>
+              <span class="text-xs font-medium text-slate-500">Periode: September 2026</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <!-- 1. Pemasukan Hari Ini -->
+              <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm card-hover">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-semibold text-slate-500 uppercase">Pemasukan Hari Ini</span>
+                  <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <i data-lucide="arrow-down-left" class="w-4 h-4"></i>
+                  </div>
+                </div>
+                <div id="card-pemasukan-hari-ini" class="text-2xl font-black font-rupiah text-emerald-700">Rp2.510.000</div>
+                <div class="mt-2 text-xs text-slate-500 flex items-center justify-between">
+                  <span>21 September 2026</span>
+                  <span class="text-emerald-600 font-medium">Tercatat</span>
+                </div>
+              </div>
+
+              <!-- 2. Pengeluaran Hari Ini -->
+              <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm card-hover">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-semibold text-slate-500 uppercase">Pengeluaran Hari Ini</span>
+                  <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
+                    <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                  </div>
+                </div>
+                <div id="card-pengeluaran-hari-ini" class="text-2xl font-black font-rupiah text-rose-600">Rp145.000</div>
+                <div class="mt-2 text-xs text-slate-500 flex items-center justify-between">
+                  <span>Akreditasi</span>
+                  <span class="text-rose-600 font-medium">Kas Tunai</span>
+                </div>
+              </div>
+
+              <!-- 3. Pemasukan Bulan Berjalan -->
+              <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm card-hover">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-semibold text-slate-500 uppercase">Pemasukan Bulan Ini</span>
+                  <div class="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center">
+                    <i data-lucide="trending-up" class="w-4 h-4"></i>
+                  </div>
+                </div>
+                <div id="card-pemasukan-bulan-ini" class="text-2xl font-black font-rupiah text-teal-700">Rp17.960.000</div>
+                <div class="mt-2 text-xs text-slate-500">Bulan September 2026</div>
+              </div>
+
+              <!-- 4. Pengeluaran Bulan Berjalan -->
+              <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm card-hover">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-semibold text-slate-500 uppercase">Pengeluaran Bulan Ini</span>
+                  <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                    <i data-lucide="trending-down" class="w-4 h-4"></i>
+                  </div>
+                </div>
+                <div id="card-pengeluaran-bulan-ini" class="text-2xl font-black font-rupiah text-slate-800">Rp15.460.200</div>
+                <div class="mt-2 text-xs text-slate-500">Operasional Klinik</div>
+              </div>
+            </div>
+
+            <!-- SALDO KAS CARDS (3 KARTU SALDO) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+              <!-- 5. Saldo Kas Tunai -->
+              <div class="bg-gradient-to-br from-amber-500/10 to-amber-500/5 rounded-xl p-5 border border-amber-200/80 shadow-sm">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-bold text-amber-800 uppercase tracking-wide">Saldo Kas Tunai</span>
+                  <span class="p-1.5 rounded-lg bg-amber-100 text-amber-800"><i data-lucide="coins" class="w-4 h-4"></i></span>
+                </div>
+                <div id="card-saldo-tunai" class="text-2xl font-extrabold font-rupiah text-amber-900">Rp2.532.000</div>
+                <p class="text-xs text-amber-700 mt-1">Uang fisik brankas & kas operasional</p>
+              </div>
+
+              <!-- 6. Saldo Kas Non-Tunai -->
+              <div class="bg-gradient-to-br from-blue-500/10 to-blue-500/5 rounded-xl p-5 border border-blue-200/80 shadow-sm">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-bold text-blue-800 uppercase tracking-wide">Saldo Kas Non-Tunai</span>
+                  <span class="p-1.5 rounded-lg bg-blue-100 text-blue-800"><i data-lucide="credit-card" class="w-4 h-4"></i></span>
+                </div>
+                <div id="card-saldo-non-tunai" class="text-2xl font-extrabold font-rupiah text-blue-900">Rp1.042.005</div>
+                <p class="text-xs text-blue-700 mt-1">Rekening Bank & Payment Gateway Klinik</p>
+              </div>
+
+              <!-- 7. Total Saldo Kas -->
+              <div class="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-xl p-5 text-white shadow-md">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-bold text-emerald-100 uppercase tracking-wide">Total Saldo Kas</span>
+                  <span class="p-1.5 rounded-lg bg-white/20 text-white"><i data-lucide="vault" class="w-4 h-4"></i></span>
+                </div>
+                <div id="card-total-saldo" class="text-2xl font-black font-rupiah text-white">Rp3.574.005</div>
+                <p class="text-xs text-emerald-100 mt-1">Kas Tunai + Kas Non-Tunai</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- DETAIL HIGHLIGHT HARI INI & SETORAN -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Highlight Pemasukan Hari Ini -->
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+              <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                    <i data-lucide="stethoscope" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-slate-800 text-sm">Rincian Pemasukan Hari Ini</h4>
+                    <p class="text-xs text-slate-500">21 September 2026</p>
+                  </div>
+                </div>
+                <button onclick="app.showView('pemasukan')" class="text-xs text-emerald-600 font-semibold hover:underline">+ Input Pemasukan</button>
+              </div>
+
+              <div class="space-y-3">
+                <div class="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                  <span class="text-sm font-medium text-slate-700">Rawat Jalan</span>
+                  <span id="highlight-rj-hari-ini" class="font-rupiah font-bold text-emerald-700">Rp1.520.000</span>
+                </div>
+                <div class="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                  <span class="text-sm font-medium text-slate-700">Rawat Inap</span>
+                  <span id="highlight-ri-hari-ini" class="font-rupiah font-bold text-emerald-700">Rp990.000</span>
+                </div>
+                <div class="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                  <span class="text-sm font-medium text-slate-700">Laboratorium (Lab)</span>
+                  <span id="highlight-lab-hari-ini" class="font-rupiah font-bold text-slate-600">Rp0</span>
+                </div>
+                <div class="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                  <span class="text-sm font-medium text-slate-700">Pemasukan Lainnya</span>
+                  <span id="highlight-lainnya-hari-ini" class="font-rupiah font-bold text-slate-600">Rp0</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Highlight Setoran & Uang Laci -->
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+              <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
+                    <i data-lucide="badge-dollar-sign" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-slate-800 text-sm">Setoran Kasir & Uang Laci</h4>
+                    <p class="text-xs text-slate-500">21 September 2026</p>
+                  </div>
+                </div>
+                <button onclick="app.showView('setoran')" class="text-xs text-blue-600 font-semibold hover:underline">+ Catat Setoran</button>
+              </div>
+
+              <div class="space-y-3">
+                <div class="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                  <span class="text-sm font-medium text-slate-700">Setoran Cash</span>
+                  <span id="highlight-setoran-cash" class="font-rupiah font-bold text-slate-800">Rp1.350.000</span>
+                </div>
+                <div class="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                  <span class="text-sm font-medium text-slate-700">Setoran Rekening Klinik</span>
+                  <span id="highlight-setoran-rekening" class="font-rupiah font-bold text-blue-700">Rp1.000.000</span>
+                </div>
+                <div class="flex items-center justify-between p-3 rounded-lg bg-emerald-50/70 border border-emerald-100">
+                  <span class="text-sm font-bold text-emerald-900">Total Setoran Otomatis</span>
+                  <span id="highlight-total-setoran" class="font-rupiah font-black text-emerald-800">Rp2.350.000</span>
+                </div>
+                <div class="flex items-center justify-between p-3 rounded-lg bg-amber-50 border border-amber-100">
+                  <div class="flex items-center space-x-1.5">
+                    <i data-lucide="inbox" class="w-4 h-4 text-amber-700"></i>
+                    <span class="text-sm font-bold text-amber-900">Uang Laci (Cash Float)</span>
+                  </div>
+                  <span id="highlight-uang-laci" class="font-rupiah font-black text-amber-800">Rp15.000</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- 4 GRAFIK DASHBOARD -->
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Visualisasi & Analisis Grafik</h3>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              
+              <!-- 1. Grafik Pemasukan per Hari -->
+              <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center space-x-2">
+                    <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                    <h4 class="font-bold text-sm text-slate-800">Grafik Pemasukan per Hari</h4>
+                  </div>
+                  <span class="text-xs text-slate-400">September 2026</span>
+                </div>
+                <div class="relative h-64">
+                  <canvas id="chart-daily-income"></canvas>
+                </div>
+              </div>
+
+              <!-- 2. Grafik Pengeluaran per Hari -->
+              <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center space-x-2">
+                    <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+                    <h4 class="font-bold text-sm text-slate-800">Grafik Pengeluaran per Hari</h4>
+                  </div>
+                  <span class="text-xs text-slate-400">September 2026</span>
+                </div>
+                <div class="relative h-64">
+                  <canvas id="chart-daily-expense"></canvas>
+                </div>
+              </div>
+
+              <!-- 3. Grafik Pemasukan Berdasarkan Sumber -->
+              <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                  <h4 class="font-bold text-sm text-slate-800">Pemasukan Berdasarkan Sumber</h4>
+                  <span class="text-xs text-slate-400">Komposisi Pendapatan</span>
+                </div>
+                <div class="relative h-64">
+                  <canvas id="chart-income-source"></canvas>
+                </div>
+              </div>
+
+              <!-- 4. Grafik Pengeluaran Berdasarkan Kategori -->
+              <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                  <h4 class="font-bold text-sm text-slate-800">Pengeluaran Berdasarkan Kategori</h4>
+                  <span class="text-xs text-slate-400">Alokasi Biaya Operasional</span>
+                </div>
+                <div class="relative h-64">
+                  <canvas id="chart-expense-category"></canvas>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </section>
+
+
+        <!-- ========================================================
+             VIEW 2: LAPORAN PEMASUKAN
+             ======================================================== -->
+        <section id="view-pemasukan" class="view-section hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+            <div>
+              <h3 class="text-xl font-bold text-slate-800">Laporan Pemasukan Klinik</h3>
+              <p class="text-xs text-slate-500">Catat pendapatan pelayanan Rawat Jalan, Rawat Inap, Lab, dan layanan medis lainnya</p>
+            </div>
+            <button onclick="document.getElementById('input-pemasukan-rj').focus()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center space-x-2 transition shadow-sm">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>Tambah Pemasukan</span>
+            </button>
+          </div>
+
+          <!-- FORM INPUT PEMASUKAN -->
+          <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+            <h4 class="font-bold text-base text-slate-800 mb-4 flex items-center space-x-2">
+              <i data-lucide="file-plus" class="w-5 h-5 text-emerald-600"></i>
+              <span>Form Input Pemasukan Harian</span>
+            </h4>
+
+            <form id="form-pemasukan" class="space-y-5">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1.5">Tanggal <span class="text-rose-500">*</span></label>
+                  <input type="date" id="input-pemasukan-tanggal" value="2026-09-21" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1.5">Metode Pembayaran</label>
+                  <select id="input-pemasukan-metode" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    <option value="Tunai">Tunai (Kasir Counter)</option>
+                    <option value="Non-Tunai / Rekening">Non-Tunai / Rekening (Transfer & QRIS)</option>
+                    <option value="Campuran" selected>Campuran (Tunai & Transfer)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Input Nominal Rincian -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Rawat Jalan (Rp)</label>
+                  <input type="text" id="input-pemasukan-rj" placeholder="0" value="1.520.000" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-rupiah font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Rawat Inap (Rp)</label>
+                  <input type="text" id="input-pemasukan-ri" placeholder="0" value="990.000" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-rupiah font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Laboratorium (Rp)</label>
+                  <input type="text" id="input-pemasukan-lab" placeholder="0" value="0" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-rupiah font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Pemasukan Lainnya (Rp)</label>
+                  <input type="text" id="input-pemasukan-lain" placeholder="0" value="0" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-rupiah font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+              </div>
+
+              <!-- Total Otomatis Banner -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-emerald-50 border border-emerald-200 gap-3">
+                <div class="flex items-center space-x-2">
+                  <i data-lucide="calculator" class="w-5 h-5 text-emerald-700"></i>
+                  <span class="text-sm font-bold text-emerald-900">Total Pemasukan Otomatis:</span>
+                </div>
+                <div id="display-total-pemasukan" class="text-2xl font-black font-rupiah text-emerald-800">
+                  Rp2.510.000
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1.5">Keterangan / Catatan Layanan</label>
+                <input type="text" id="input-pemasukan-keterangan" placeholder="Contoh: Pemasukan shift pagi dan sore poliklinik..." class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+              </div>
+
+              <div class="flex justify-end">
+                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition">
+                  Simpan Laporan Pemasukan
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- TABEL PEMASUKAN -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+              <h4 class="font-bold text-sm text-slate-800">Riwayat Catatan Pemasukan</h4>
+            </div>
+            <div class="table-container">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase">
+                    <th class="py-3 px-4">Tanggal</th>
+                    <th class="py-3 px-4 text-right">Rawat Jalan</th>
+                    <th class="py-3 px-4 text-right">Rawat Inap</th>
+                    <th class="py-3 px-4 text-right">Lab</th>
+                    <th class="py-3 px-4 text-right">Lainnya</th>
+                    <th class="py-3 px-4 text-right">Total Pemasukan</th>
+                    <th class="py-3 px-4 text-center">Metode</th>
+                    <th class="py-3 px-4 text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="table-pemasukan-body">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ========================================================
+             VIEW 3: LAPORAN PENGELUARAN
+             ======================================================== -->
+        <section id="view-pengeluaran" class="view-section hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+            <div>
+              <h3 class="text-xl font-bold text-slate-800">Laporan Pengeluaran Klinik</h3>
+              <p class="text-xs text-slate-500">Kelola biaya operasional: Obat, BHP, Listrik, WiFi, Apart, ATK, Klinik Pintar, Akreditasi, Sarpras, Lainnya</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs text-slate-500">Total Pengeluaran:</span>
+              <span id="total-pengeluaran-badge" class="px-3 py-1 bg-rose-100 text-rose-800 font-bold font-rupiah rounded-lg text-sm">Rp15.460.200</span>
+            </div>
+          </div>
+
+          <!-- FORM INPUT PENGELUARAN -->
+          <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+            <h4 class="font-bold text-base text-slate-800 mb-4 flex items-center space-x-2">
+              <i data-lucide="receipt-text" class="w-5 h-5 text-rose-600"></i>
+              <span>Form Catat Transaksi Pengeluaran</span>
+            </h4>
+
+            <form id="form-pengeluaran" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1.5">Tanggal Transaksi <span class="text-rose-500">*</span></label>
+                  <input type="date" id="input-pengeluaran-tanggal" value="2026-09-21" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1.5">Kategori Pengeluaran <span class="text-rose-500">*</span></label>
+                  <select id="input-pengeluaran-kategori" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                    <option value="Obat">Obat (Pengadaan Farmasi)</option>
+                    <option value="BHP">BHP (Bahan Habis Pakai Medis)</option>
+                    <option value="Listrik">Listrik (PLN Bulanan)</option>
+                    <option value="WiFi">WiFi (Internet & Komunikasi)</option>
+                    <option value="Apart">Apart (Pemadam APAR & Perawatan)</option>
+                    <option value="ATK">ATK (Alat Tulis Kantor & Resep)</option>
+                    <option value="Klinik Pintar">Klinik Pintar (Aplikasi SIM Klinik)</option>
+                    <option value="Akreditasi" selected>Akreditasi (Persiapan & Pokja)</option>
+                    <option value="Sarpras">Sarpras (Sarana & Prasarana Fisik)</option>
+                    <option value="Lainnya">Lainnya (Operasional Umum)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1.5">Metode Pembayaran</label>
+                  <select id="input-pengeluaran-metode" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                    <option value="Kas Tunai" selected>Kas Tunai (Tunai Brankas)</option>
+                    <option value="Rekening Klinik">Rekening Klinik (Transfer Bank)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1.5">Nominal (Rupiah) <span class="text-rose-500">*</span></label>
+                  <input type="text" id="input-pengeluaran-nominal" placeholder="0" value="145.000" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-rupiah font-bold text-rose-700 focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1.5">Keterangan / Deskripsi Biaya</label>
+                  <input type="text" id="input-pengeluaran-keterangan" value="Konsumsi dan penggandaan berkas dokumen pokja akreditasi klinik" placeholder="Contoh: Pembelian ATK resep poli..." class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                </div>
+              </div>
+
+              <div class="flex justify-end pt-2">
+                <button type="submit" class="bg-rose-600 hover:bg-rose-700 text-white px-6 py-2.5 rounded-lg text-sm font-bold shadow-md transition">
+                  Simpan Pengeluaran
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- TABEL PENGELUARAN -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+              <h4 class="font-bold text-sm text-slate-800">Daftar Transaksi Pengeluaran</h4>
+            </div>
+            <div class="table-container">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase">
+                    <th class="py-3 px-4">Tanggal</th>
+                    <th class="py-3 px-4">Kategori</th>
+                    <th class="py-3 px-4">Keterangan</th>
+                    <th class="py-3 px-4 text-center">Metode</th>
+                    <th class="py-3 px-4 text-right">Nominal</th>
+                    <th class="py-3 px-4 text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="table-pengeluaran-body">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ========================================================
+             VIEW 4: SETORAN
+             ======================================================== -->
+        <section id="view-setoran" class="view-section hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+            <div>
+              <h3 class="text-xl font-bold text-slate-800">Pencatatan Setoran Kasir</h3>
+              <p class="text-xs text-slate-500">Rekonsiliasi setoran tunai, transfer ke rekening klinik, dan sisa fisik uang laci</p>
+            </div>
+          </div>
+
+          <!-- FORM INPUT SETORAN -->
+          <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+            <h4 class="font-bold text-base text-slate-800 mb-4 flex items-center space-x-2">
+              <i data-lucide="arrow-right-left" class="w-5 h-5 text-blue-600"></i>
+              <span>Form Input Setoran Harian</span>
+            </h4>
+
+            <form id="form-setoran" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1.5">Tanggal Setoran <span class="text-rose-500">*</span></label>
+                  <input type="date" id="input-setoran-tanggal" value="2026-09-21" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1.5">Setoran Cash (Rp)</label>
+                  <input type="text" id="input-setoran-cash" placeholder="0" value="1.350.000" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-rupiah font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1.5">Setoran ke Rekening Klinik (Rp)</label>
+                  <input type="text" id="input-setoran-rekening" placeholder="0" value="1.000.000" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-rupiah font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+              </div>
+
+              <!-- Total Setoran & Uang Laci Card -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex items-center justify-between p-4 rounded-xl bg-blue-50 border border-blue-200">
+                  <div class="flex items-center space-x-2">
+                    <i data-lucide="calculator" class="w-5 h-5 text-blue-700"></i>
+                    <span class="text-sm font-bold text-blue-900">Total Setoran Otomatis:</span>
+                  </div>
+                  <div id="display-total-setoran" class="text-2xl font-black font-rupiah text-blue-800">
+                    Rp2.350.000
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between p-4 rounded-xl bg-amber-50 border border-amber-200">
+                  <div>
+                    <label class="block text-xs font-bold text-amber-900 uppercase">Uang Laci (Cash Float)</label>
+                    <span class="text-xs text-amber-700">Sisa uang di laci kasir</span>
+                  </div>
+                  <div class="w-40">
+                    <input type="text" id="input-setoran-laci" placeholder="0" value="15.000" class="w-full border border-amber-300 bg-white rounded-lg px-3 py-1.5 text-right font-rupiah font-bold text-amber-900 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1.5">Keterangan / Berita Acara Kasir</label>
+                <input type="text" id="input-setoran-keterangan" value="Setoran kasir dan penerimaan transfer bank klinik 21 September 2026" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+              </div>
+
+              <div class="flex justify-end pt-2">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg text-sm font-bold shadow-md transition">
+                  Simpan Catatan Setoran
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- TABEL SETORAN -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-4 border-b border-slate-200">
+              <h4 class="font-bold text-sm text-slate-800">Riwayat Setoran Kasir</h4>
+            </div>
+            <div class="table-container">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase">
+                    <th class="py-3 px-4">Tanggal</th>
+                    <th class="py-3 px-4 text-right">Setoran Cash</th>
+                    <th class="py-3 px-4 text-right">Setoran Rekening</th>
+                    <th class="py-3 px-4 text-right">Total Setoran</th>
+                    <th class="py-3 px-4 text-right">Uang Laci</th>
+                    <th class="py-3 px-4">Keterangan</th>
+                    <th class="py-3 px-4 text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="table-setoran-body">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ========================================================
+             VIEW 5: SALDO KAS
+             ======================================================== -->
+        <section id="view-saldo" class="view-section hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+            <div>
+              <h3 class="text-xl font-bold text-slate-800">Posisi & Audit Saldo Kas Klinik</h3>
+              <p class="text-xs text-slate-500">Penelusuran saldo kas tunai dan rekening bank secara otomatis berdasarkan arus transaksi</p>
+            </div>
+          </div>
+
+          <!-- TAMPILAN SALDO UTAMA -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Saldo Kas Non-Tunai</span>
+                  <span class="p-2 rounded-xl bg-blue-50 text-blue-600"><i data-lucide="credit-card" class="w-5 h-5"></i></span>
+                </div>
+                <div id="saldo-view-non-tunai" class="text-3xl font-black font-rupiah text-blue-900 mt-2">Rp1.042.005</div>
+              </div>
+              <div class="mt-4 pt-4 border-t border-slate-100 text-xs text-slate-500 flex justify-between">
+                <span>Saldo Awal Bank:</span>
+                <span id="saldo-awal-non-tunai-disp" class="font-rupiah font-semibold">Rp42.005</span>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Saldo Kas Tunai</span>
+                  <span class="p-2 rounded-xl bg-amber-50 text-amber-600"><i data-lucide="coins" class="w-5 h-5"></i></span>
+                </div>
+                <div id="saldo-view-tunai" class="text-3xl font-black font-rupiah text-amber-900 mt-2">Rp2.532.000</div>
+              </div>
+              <div class="mt-4 pt-4 border-t border-slate-100 text-xs text-slate-500 flex justify-between">
+                <span>Saldo Awal Tunai:</span>
+                <span id="saldo-awal-tunai-disp" class="font-rupiah font-semibold">Rp247.000</span>
+              </div>
+            </div>
+
+            <div class="bg-gradient-to-tr from-emerald-700 to-teal-600 rounded-2xl p-6 text-white shadow-lg flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-bold text-emerald-100 uppercase tracking-wider">Total Saldo Kas</span>
+                  <span class="p-2 rounded-xl bg-white/20 text-white"><i data-lucide="vault" class="w-5 h-5"></i></span>
+                </div>
+                <div id="saldo-view-total" class="text-3xl font-black font-rupiah text-white mt-2">Rp3.574.005</div>
+              </div>
+              <div class="mt-4 pt-4 border-t border-emerald-500/30 text-xs text-emerald-100 flex justify-between">
+                <span>Rumus Akuntansi:</span>
+                <span class="font-semibold">Kas Tunai + Non-Tunai</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SALDO AUDIT TRAIL TABLE -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+              <h4 class="font-bold text-sm text-slate-800">Penelusuran Mutasi Kas (Audit Trail)</h4>
+              <span class="text-xs text-slate-500">15 Transaksi Terbaru</span>
+            </div>
+            <div class="table-container">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase">
+                    <th class="py-2.5 px-4">Tanggal</th>
+                    <th class="py-2.5 px-4">Jenis</th>
+                    <th class="py-2.5 px-4">Rincian Transaksi</th>
+                    <th class="py-2.5 px-4">Akun Kas / Metode</th>
+                    <th class="py-2.5 px-4 text-right">Mutasi (Rp)</th>
+                  </tr>
+                </thead>
+                <tbody id="saldo-audit-trail">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ========================================================
+             VIEW 6: LAPORAN HARIAN
+             ======================================================== -->
+        <section id="view-laporan-harian" class="view-section hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+            <div>
+              <h3 class="text-xl font-bold text-slate-800">Laporan Keuangan Harian</h3>
+              <p class="text-xs text-slate-500">Lembar rekapitulasi harian kasir & penerimaan pasien</p>
+            </div>
+            <div class="flex items-center space-x-3">
+              <input type="date" id="daily-filter-date" value="2026-09-21" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-semibold">
+              <button onclick="window.clinicExporter.printFormalReport('2026-09')" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5">
+                <i data-lucide="printer" class="w-4 h-4"></i>
+                <span>Cetak Lembar</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SUMMARY CARDS HARIAN -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+              <span class="text-xs font-semibold text-slate-500 uppercase">Total Pemasukan Harian</span>
+              <div id="daily-sum-pemasukan" class="text-2xl font-black font-rupiah text-emerald-700 mt-1">Rp2.510.000</div>
+              <p class="text-xs text-slate-400 mt-1" id="daily-title-date">2026-09-21</p>
+            </div>
+
+            <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+              <span class="text-xs font-semibold text-slate-500 uppercase">Total Pengeluaran Harian</span>
+              <div id="daily-sum-pengeluaran" class="text-2xl font-black font-rupiah text-rose-700 mt-1">Rp145.000</div>
+              <p class="text-xs text-slate-400 mt-1">Biaya Operasional</p>
+            </div>
+
+            <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+              <span class="text-xs font-semibold text-slate-500 uppercase">Surplus Kas Harian</span>
+              <div id="daily-sum-selisih" class="text-2xl font-black font-rupiah text-teal-700 mt-1">Rp2.365.000</div>
+              <p class="text-xs text-slate-400 mt-1">Pemasukan - Pengeluaran</p>
+            </div>
+          </div>
+
+          <!-- DETAIL SECTIONS -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Pemasukan Breakdown -->
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-3">
+              <h4 class="font-bold text-sm text-slate-800 pb-2 border-b border-slate-100">Pemasukan Berdasarkan Unit Layanan</h4>
+              <div class="flex justify-between py-2 border-b border-slate-50">
+                <span class="text-slate-600">Rawat Jalan</span>
+                <span id="daily-rj" class="font-rupiah font-bold text-emerald-700">Rp1.520.000</span>
+              </div>
+              <div class="flex justify-between py-2 border-b border-slate-50">
+                <span class="text-slate-600">Rawat Inap</span>
+                <span id="daily-ri" class="font-rupiah font-bold text-emerald-700">Rp990.000</span>
+              </div>
+              <div class="flex justify-between py-2 border-b border-slate-50">
+                <span class="text-slate-600">Laboratorium</span>
+                <span id="daily-lab" class="font-rupiah font-bold text-slate-600">Rp0</span>
+              </div>
+              <div class="flex justify-between py-2">
+                <span class="text-slate-600">Pemasukan Lainnya</span>
+                <span id="daily-lainnya" class="font-rupiah font-bold text-slate-600">Rp0</span>
+              </div>
+            </div>
+
+            <!-- Setoran Breakdown -->
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-3">
+              <h4 class="font-bold text-sm text-slate-800 pb-2 border-b border-slate-100">Rekapitulasi Fisik Kas & Setoran</h4>
+              <div class="flex justify-between py-2 border-b border-slate-50">
+                <span class="text-slate-600">Setoran Cash</span>
+                <span id="daily-setoran-cash" class="font-rupiah font-bold text-slate-800">Rp1.350.000</span>
+              </div>
+              <div class="flex justify-between py-2 border-b border-slate-50">
+                <span class="text-slate-600">Setoran Rekening Bank Klinik</span>
+                <span id="daily-setoran-rekening" class="font-rupiah font-bold text-blue-700">Rp1.000.000</span>
+              </div>
+              <div class="flex justify-between py-2 border-b border-slate-50 font-semibold text-emerald-800">
+                <span>Total Setoran Disetor</span>
+                <span id="daily-total-setoran" class="font-rupiah font-bold">Rp2.350.000</span>
+              </div>
+              <div class="flex justify-between py-2 text-amber-900 font-semibold">
+                <span>Sisa Uang Laci</span>
+                <span id="daily-uang-laci" class="font-rupiah font-bold">Rp15.000</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rincian Pengeluaran Harian -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+            <h4 class="font-bold text-sm text-slate-800 mb-3">Daftar Pengeluaran Hari Ini</h4>
+            <div class="table-container">
+              <table class="w-full text-left text-sm">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase">
+                    <th class="py-2 px-3">Kategori</th>
+                    <th class="py-2 px-3">Keterangan</th>
+                    <th class="py-2 px-3 text-center">Metode</th>
+                    <th class="py-2 px-3 text-right">Nominal</th>
+                  </tr>
+                </thead>
+                <tbody id="daily-table-expense">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ========================================================
+             VIEW 7: LAPORAN BULANAN
+             ======================================================== -->
+        <section id="view-laporan-bulanan" class="view-section hidden space-y-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-slate-200">
+            <div>
+              <h3 class="text-xl font-bold text-slate-800">Laporan Keuangan Bulanan</h3>
+              <p class="text-xs text-slate-500">Rekapitulasi komprehensif laporan laba rugi, setoran, dan posisi saldo kas</p>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-2">
+              <input type="month" id="monthly-filter-month" value="2026-09" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-semibold">
+              
+              <!-- 3 Export Buttons: Excel, PDF, Print -->
+              <button id="btn-export-excel" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition shadow-sm">
+                <i data-lucide="sheet" class="w-4 h-4"></i>
+                <span>Export Excel</span>
+              </button>
+              <button id="btn-export-pdf" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition shadow-sm">
+                <i data-lucide="file-text" class="w-4 h-4"></i>
+                <span>Export PDF</span>
+              </button>
+              <button id="btn-print-laporan" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition shadow-sm">
+                <i data-lucide="printer" class="w-4 h-4"></i>
+                <span>Print Laporan</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 10 KARTU METRIK UTAMA LAPORAN BULANAN -->
+          <div>
+            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Ringkasan Kinerja Keuangan Bulanan</h4>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+              
+              <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <span class="text-[11px] font-semibold text-slate-400 uppercase">Total Pemasukan</span>
+                <div id="m-total-pemasukan" class="text-lg font-extrabold font-rupiah text-emerald-700 mt-1">Rp17.960.000</div>
+              </div>
+
+              <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <span class="text-[11px] font-semibold text-slate-400 uppercase">Total Pengeluaran</span>
+                <div id="m-total-pengeluaran" class="text-lg font-extrabold font-rupiah text-rose-700 mt-1">Rp15.460.200</div>
+              </div>
+
+              <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm col-span-2 sm:col-span-1">
+                <span class="text-[11px] font-semibold text-slate-400 uppercase">Selisih (Laba Bersih)</span>
+                <div id="m-selisih" class="text-lg font-extrabold font-rupiah text-emerald-700 mt-1">Rp2.499.800</div>
+              </div>
+
+              <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <span class="text-[11px] font-semibold text-slate-400 uppercase">Total Rawat Jalan</span>
+                <div id="m-rawat-jalan" class="text-lg font-extrabold font-rupiah text-slate-800 mt-1">Rp10.370.000</div>
+              </div>
+
+              <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <span class="text-[11px] font-semibold text-slate-400 uppercase">Total Rawat Inap</span>
+                <div id="m-rawat-inap" class="text-lg font-extrabold font-rupiah text-slate-800 mt-1">Rp7.440.000</div>
+              </div>
+
+              <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <span class="text-[11px] font-semibold text-slate-400 uppercase">Total Lab</span>
+                <div id="m-lab" class="text-lg font-extrabold font-rupiah text-slate-600 mt-1">Rp0</div>
+              </div>
+
+              <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <span class="text-[11px] font-semibold text-slate-400 uppercase">Total Setoran</span>
+                <div id="m-total-setoran" class="text-lg font-extrabold font-rupiah text-blue-700 mt-1">Rp11.350.000</div>
+              </div>
+
+              <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <span class="text-[11px] font-semibold text-slate-400 uppercase">Total Kas Tunai</span>
+                <div id="m-kas-tunai" class="text-lg font-extrabold font-rupiah text-amber-800 mt-1">Rp2.532.000</div>
+              </div>
+
+              <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <span class="text-[11px] font-semibold text-slate-400 uppercase">Total Kas Non-Tunai</span>
+                <div id="m-kas-non-tunai" class="text-lg font-extrabold font-rupiah text-blue-900 mt-1">Rp1.042.005</div>
+              </div>
+
+              <div class="bg-gradient-to-r from-emerald-700 to-teal-700 text-white p-4 rounded-xl shadow-md col-span-2 sm:col-span-1">
+                <span class="text-[11px] font-semibold text-emerald-200 uppercase">Total Saldo Kas</span>
+                <div id="m-total-saldo" class="text-lg font-black font-rupiah text-white mt-1">Rp3.574.005</div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- TABEL TRANSAKSI BULANAN LENGKAP -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+              <h4 class="font-bold text-sm text-slate-800">Buku Transaksi Keuangan Bulanan Lengkap</h4>
+              <span class="text-xs text-slate-500">Urutan kronologis</span>
+            </div>
+            <div class="table-container">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase">
+                    <th class="py-3 px-3 text-center" width="5%">No</th>
+                    <th class="py-3 px-3" width="12%">Tanggal</th>
+                    <th class="py-3 px-3 text-center" width="10%">Jenis</th>
+                    <th class="py-3 px-3" width="15%">Kategori</th>
+                    <th class="py-3 px-3">Keterangan</th>
+                    <th class="py-3 px-3 text-right" width="15%">Pemasukan</th>
+                    <th class="py-3 px-3 text-right" width="15%">Pengeluaran</th>
+                  </tr>
+                </thead>
+                <tbody id="monthly-transactions-body">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ========================================================
+             VIEW 8: RIWAYAT TRANSAKSI
+             ======================================================== -->
+        <section id="view-transaksi" class="view-section hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+            <div>
+              <h3 class="text-xl font-bold text-slate-800">Riwayat Seluruh Transaksi</h3>
+              <p class="text-xs text-slate-500">Pencarian, filterisasi kategori/tanggal, serta manajemen data keuangan</p>
+            </div>
+          </div>
+
+          <!-- SEARCH & FILTER TOOLBAR -->
+          <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              <!-- Search -->
+              <div class="lg:col-span-2">
+                <label class="block text-[11px] font-semibold text-slate-500 mb-1">Cari Keterangan / Kategori</label>
+                <div class="relative">
+                  <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+                  <input type="text" id="tx-filter-search" placeholder="Ketik kata kunci pencarian..." class="w-full pl-9 pr-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+              </div>
+
+              <!-- Filter Jenis -->
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-500 mb-1">Jenis Transaksi</label>
+                <select id="tx-filter-jenis" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                  <option value="Semua">Semua Jenis</option>
+                  <option value="Pemasukan">Pemasukan</option>
+                  <option value="Pengeluaran">Pengeluaran</option>
+                  <option value="Setoran">Setoran</option>
+                </select>
+              </div>
+
+              <!-- Filter Tanggal Mulai -->
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-500 mb-1">Dari Tanggal</label>
+                <input type="date" id="tx-filter-start" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+              </div>
+
+              <!-- Filter Tanggal Akhir -->
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-500 mb-1">Sampai Tanggal</label>
+                <input type="date" id="tx-filter-end" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+              </div>
+            </div>
+          </div>
+
+          <!-- TABEL RIWAYAT TRANSAKSI UTAMA -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="table-container">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase tracking-wider">
+                    <th class="py-3 px-3">Tanggal</th>
+                    <th class="py-3 px-3 text-center">Jenis</th>
+                    <th class="py-3 px-3">Kategori</th>
+                    <th class="py-3 px-3">Keterangan</th>
+                    <th class="py-3 px-3 text-right">Pemasukan</th>
+                    <th class="py-3 px-3 text-right">Pengeluaran</th>
+                    <th class="py-3 px-3 text-center">Metode</th>
+                    <th class="py-3 px-3 text-right">Nominal</th>
+                    <th class="py-3 px-3 text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="table-transaksi-body">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- PAGINATION CONTROLS -->
+            <div class="p-4 border-t border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <span id="tx-page-info" class="text-xs text-slate-600">Menampilkan 1 - 10 transaksi</span>
+              <div class="flex items-center space-x-2">
+                <button id="btn-prev-page" class="px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 bg-white hover:bg-slate-100 disabled:opacity-40">
+                  Sebelumnya
+                </button>
+                <button id="btn-next-page" class="px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 bg-white hover:bg-slate-100 disabled:opacity-40">
+                  Berikutnya
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ========================================================
+             VIEW 9: PENGATURAN
+             ======================================================== -->
+        <section id="view-pengaturan" class="view-section hidden space-y-6 max-w-4xl">
+          <div class="pb-3 border-b border-slate-200">
+            <h3 class="text-xl font-bold text-slate-800">Pengaturan Profil Klinik & Saldo Awal</h3>
+            <p class="text-xs text-slate-500">Konfigurasi identitas kop surat formal dan kalibrasi modal saldo kas awal</p>
+          </div>
+
+          <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+            <form id="form-pengaturan" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Fasilitas Pelayanan Kesehatan / Klinik</label>
+                  <input type="text" id="cfg-nama-klinik" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Nomor Izin Operasional / SIP</label>
+                  <input type="text" id="cfg-izin-operasional" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Alamat Lengkap</label>
+                <input type="text" id="cfg-alamat" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Nomor Telepon / Kontak</label>
+                  <input type="text" id="cfg-telepon" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Pimpinan / Dokter Penanggung Jawab</label>
+                  <input type="text" id="cfg-pimpinan" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Bendahara / Petugas Keuangan</label>
+                  <input type="text" id="cfg-bendahara" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+              </div>
+
+              <!-- Saldo Awal -->
+              <div class="p-4 rounded-xl bg-amber-50/70 border border-amber-200 space-y-3 mt-4">
+                <h5 class="font-bold text-xs text-amber-900 uppercase tracking-wide">Konfigurasi Saldo Awal (Opening Balance)</h5>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-semibold text-amber-800 mb-1">Saldo Awal Kas Tunai (Rp)</label>
+                    <input type="text" id="cfg-saldo-awal-tunai" class="w-full border border-amber-300 rounded-lg px-3 py-2 text-sm font-rupiah font-semibold focus:outline-none bg-white">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-amber-800 mb-1">Saldo Awal Kas Non-Tunai / Bank (Rp)</label>
+                    <input type="text" id="cfg-saldo-awal-non-tunai" class="w-full border border-amber-300 rounded-lg px-3 py-2 text-sm font-rupiah font-semibold focus:outline-none bg-white">
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                <button type="button" onclick="app.resetToInitial()" class="text-rose-600 hover:text-rose-800 text-xs font-bold flex items-center space-x-1">
+                  <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                  <span>Reset Database ke Data Contoh Awal</span>
+                </button>
+                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-lg text-sm font-bold shadow-md transition">
+                  Simpan Perubahan Pengaturan
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+
+  <!-- ========================================================
+       MODAL 1: EDIT TRANSAKSI
+       ======================================================== -->
+  <div id="modal-edit" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <h4 class="font-bold text-slate-800 text-sm">Edit Data Transaksi</h4>
+        <button onclick="app.closeEditModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="modal-edit-fields" class="p-6">
+        <!-- Injected dynamically based on item type -->
+      </div>
+      <div class="px-6 py-3 bg-slate-50 border-t border-slate-100 flex justify-end space-x-2">
+        <button onclick="app.closeEditModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100">
+          Batal
+        </button>
+        <button onclick="app.saveEditModal()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm">
+          Simpan Perubahan
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========================================================
+       MODAL 2: KONFIRMASI HAPUS
+       ======================================================== -->
+  <div id="modal-delete-confirm" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+    <div class="bg-white rounded-2xl max-w-sm w-full shadow-2xl p-6 border border-slate-200 text-center animate-in fade-in zoom-in-95 duration-200">
+      <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-3">
+        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+      </div>
+      <h4 class="font-bold text-slate-800 text-base mb-1">Konfirmasi Hapus Data</h4>
+      <p id="delete-modal-desc" class="text-xs text-slate-600 mb-5 leading-relaxed">
+        Apakah Anda yakin ingin menghapus data ini?
+      </p>
+      <div class="flex items-center justify-center space-x-3">
+        <button onclick="app.closeDeleteModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100">
+          Batal
+        </button>
+        <button onclick="app.executeDelete()" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold shadow-sm">
+          Ya, Hapus Data
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- APPLICATION SCRIPTS -->
+  <script src="js/db.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
